@@ -1,0 +1,5 @@
+const SHARED_SECRET = "sharedSecretHere";
+const DEFAULT_PORT = 3000;
+
+exports.SHARED_SECRET = SHARED_SECRET;
+exports.DEFAULT_PORT = DEFAULT_PORT;

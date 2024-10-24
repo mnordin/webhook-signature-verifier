@@ -1,12 +1,12 @@
+// Shared secret to construct the HMAC signature
+const { SHARED_SECRET, DEFAULT_PORT } = require("./globals.js");
+
 const express = require("express");
 const bodyParser = require("body-parser");
 const crypto = require("crypto");
 
 const app = express();
-const PORT = process.env.PORT || 3000;
-
-// Shared secret to construct the HMAC signature
-const SHARED_SECRET = "sharedSecretHere";
+const PORT = process.env.PORT || DEFAULT_PORT;
 
 app.use(bodyParser.json({ type: "application/json", verify: verifyRequestBody }));
 
