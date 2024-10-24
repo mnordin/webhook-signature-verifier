@@ -1,6 +1,4 @@
-// Shared secret to construct the HMAC signature
-const { SHARED_SECRET, DEFAULT_PORT } = require("./globals.js");
-
+const { SHARED_SECRET, DEFAULT_PORT, SIGNATURE_HEADER_NAME } = require("./globals.js");
 const express = require("express");
 const bodyParser = require("body-parser");
 const crypto = require("crypto");
@@ -15,7 +13,7 @@ function verifyRequestBody(req, res, buf, encoding) {
 }
 
 function validateSignature(req, res, next) {
-  const signature = req.header("X-Signature");
+  const signature = req.header(SIGNATURE_HEADER_NAME);
   const hmac = crypto.createHmac("sha256", SHARED_SECRET);
   hmac.update(req.rawBody);
   const expectedSignature = hmac.digest("hex");
