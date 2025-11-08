@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Setup script for webhook-signature-verifier
+# Setup script for webhook-signature-verifier (Next.js version)
 # This script helps ensure you have the correct Node.js version
 
 set -e
 
-echo "🔧 Setting up webhook-signature-verifier..."
+echo "🔧 Setting up webhook-signature-verifier (Next.js)..."
 
 # Colors for output
 RED='\033[0;31m'
@@ -111,29 +111,15 @@ echo ""
 echo -e "${GREEN}🎉 Setup complete!${NC}"
 echo ""
 echo -e "${BLUE}You can now run:${NC}"
-echo -e "  ${YELLOW}npx webhook-signature-verifier${NC}                    # Start with defaults"
-echo -e "  ${YELLOW}npx webhook-signature-verifier --help${NC}             # See all options"
-echo -e "  ${YELLOW}npx webhook-signature-verifier --help-extended${NC}    # Extended help"
+echo -e "  ${YELLOW}npm run dev${NC}                 # Start development server"
+echo -e "  ${YELLOW}npm run build${NC}               # Build for production"
+echo -e "  ${YELLOW}npm start${NC}                   # Start production server"
+echo -e "  ${YELLOW}npm test${NC}                    # Run tests"
 echo ""
-echo -e "${BLUE}Or if you want to run locally:${NC}"
-echo -e "  ${YELLOW}npm start${NC}                                         # Start server"
-echo -e "  ${YELLOW}npm test${NC}                                          # Run tests"
+echo -e "${BLUE}Next.js webhook verifier will be available at:${NC}"
+echo -e "  ${YELLOW}http://localhost:3000${NC}       # Web interface"
+echo -e "  ${YELLOW}http://localhost:3000/api/webhook${NC} # Webhook endpoint"
 echo ""
-
-# Test if npx works
-if command_exists npx; then
-    NODE_VERSION_CHECK=$(get_node_major_version)
-    if [ "$NODE_VERSION_CHECK" -ge "$REQUIRED_NODE_VERSION" ]; then
-        echo -e "${GREEN}🧪 Testing npx functionality...${NC}"
-        if npx --version >/dev/null 2>&1; then
-            echo -e "${GREEN}✅ npx is working correctly!${NC}"
-        else
-            echo -e "${YELLOW}⚠️  npx might not be working properly. You may need to restart your terminal.${NC}"
-        fi
-    fi
-else
-    echo -e "${YELLOW}⚠️  npx not found. It should be included with npm 5.2+${NC}"
-fi
 
 echo -e "${BLUE}💡 If you encounter issues, try restarting your terminal or running:${NC}"
 echo -e "  ${YELLOW}source ~/.bashrc${NC}  # or ~/.zshrc, depending on your shell"
