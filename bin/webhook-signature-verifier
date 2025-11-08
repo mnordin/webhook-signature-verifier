@@ -1,0 +1,74 @@
+#!/usr/bin/env node
+
+const { program } = require('commander');
+const app = require('../app.js');
+const { DEFAULT_PORT } = require('../globals.js');
+
+program
+  .name('webhook-signature-verifier')
+  .description('A webhook signature verifier server for HMAC SHA-256 validation')
+  .version('1.0.0')
+  .option('-p, --port <number>', 'port to run the server on', DEFAULT_PORT)
+  .option('-s, --secret <string>', 'shared secret for HMAC verification (can also use WEBHOOK_SECRET env var)')
+  .option('-h, --header <string>', 'signature header name', 'X-Signature')
+  .option('--help-extended', 'show extended help with examples')
+  .parse();
+
+const options = program.opts();
+
+if (options.helpExtended) {
+  console.log(`
+Extended Help - Webhook Signature Verifier
+==========================================
+
+This tool starts a webhook signature verification server that validates HMAC SHA-256 signatures.
+
+Examples:
+  npx webhook-signature-verifier
+  npx webhook-signature-verifier --port 8080
+  npx webhook-signature-verifier --secret "mySecretKey" --port 3001
+  npx webhook-signature-verifier --header "X-Hub-Signature-256"
+
+Environment Variables:
+  WEBHOOK_SECRET    Shared secret for HMAC verification
+  PORT              Port to run the server on
+
+Notes:
+- The server expects webhooks to be sent via POST to /webhook
+- Signatures should be sent as hex-encoded HMAC SHA-256 digests
+- The signature header name can be customized (default: X-Signature)
+- Use tools like ngrok to expose your local server to the internet for testing
+`);
+  process.exit(0);
+}
+
+// Set environment variables from CLI options
+if (options.port) {
+  process.env.PORT = options.port;
+}
+
+if (options.secret) {
+  process.env.WEBHOOK_SECRET = options.secret;
+}
+
+if (options.header) {
+  process.env.SIGNATURE_HEADER_NAME = options.header;
+}
+
+// Validate that we have a secret
+const secret = process.env.WEBHOOK_SECRET || require('../globals.js').SHARED_SECRET;
+if (secret === 'sharedSecretHere') {
+  console.warn('⚠️  Warning: Using default shared secret. Set WEBHOOK_SECRET environment variable or use --secret flag for production use.');
+}
+
+const PORT = process.env.PORT || DEFAULT_PORT;
+
+console.log('🚀 Starting Webhook Signature Verifier...');
+console.log(`📝 Using signature header: ${options.header || 'X-Signature'}`);
+console.log(`🔐 Secret configured: ${secret !== 'sharedSecretHere' ? '✅' : '⚠️  (default)'}`);
+
+app.listen(PORT, () => {
+  console.log(`🌐 Server running on http://localhost:${PORT}`);
+  console.log(`📨 Send POST requests to http://localhost:${PORT}/webhook`);
+  console.log(`❓ Run with --help-extended for more information`);
+});
