@@ -1,22 +1,94 @@
-## Webhook signature verifier
+# Webhook Signature Verifier
 
-A very small, standalone express application, to take inspiration from when constructing your own HMAC signatures for verification when receiving webhooks.
+A simple Next.js application for debugging webhook signatures. This tool verifies HMAC SHA-256 signatures on webhook payloads and displays the results.
 
-This app constructs a HMAC SHA 256 using a shared secret between your system and the upstream service you're subscribing to, and expects the upstream signature to be set in the headers.
+## Features
 
-Please be aware that some special characters are encoded automatically when parsing the body, which will generate inaccurate signatures. It's important to construct the signature using the raw body when comparing your generated signature against the one the request is signed with. This is done in the `validateSignature` middleware.
+- Verify webhook signatures using HMAC SHA-256
+- Display request details and validation results
+- Simple web interface for testing
+- API endpoint for integration with external tools
 
-You can use something like [ngrok](https://ngrok.com/docs/getting-started/) to be able to receive traffic from the Internet, just remember to turn the tunnel off when you're done debugging.
+## Getting Started
 
-## Start the application
+### Prerequisites
 
+- Node.js (version 16 or later recommended)
+- npm or yarn
+
+### Installation
+
+1. Clone the repository
+   ```bash
+   git clone https://github.com/yourusername/webhook-signature-verifier.git
+   cd webhook-signature-verifier
+   ```
+
+2. Install dependencies
+   ```bash
+   npm install
+   # or
+   yarn
+   ```
+
+3. Start the development server
+   ```bash
+   npm run dev
+   # or
+   yarn dev
+   ```
+
+4. Open [http://localhost:3000](http://localhost:3000) in your browser
+
+## Usage
+
+### Web Interface
+
+The web interface allows you to:
+- Enter a JSON payload
+- Send a test webhook to the API endpoint
+- View the response and validation results
+
+### API Endpoint
+
+You can send webhooks directly to the API endpoint:
+
+```bash
+curl -X POST \
+  http://localhost:3000/api/webhook \
+  -H 'Content-Type: application/json' \
+  -H 'X-Signature: [your-signature-here]' \
+  -d '{"event":"test","data":{"id":123}}'
 ```
-npm i
-node app.js
+
+### Creating a Valid Signature
+
+To create a valid signature, compute an HMAC with SHA-256 using the shared secret:
+
+```javascript
+const crypto = require('crypto');
+const payload = JSON.stringify({event: "test", data: {id: 123}});
+const hmac = crypto.createHmac('sha256', 'sharedSecretHere');
+hmac.update(payload);
+const signature = hmac.digest('hex');
+console.log(signature);
 ```
 
-## Run tests
+## Configuration
 
+You can modify the configuration in `lib/constants.js`:
+
+- `SHARED_SECRET`: The secret key used for HMAC calculation
+- `SIGNATURE_HEADER_NAME`: The header name used for the signature
+
+## Testing
+
+```bash
+npm test
+# or
+yarn test
 ```
-npm run test
-```
+
+## License
+
+ISC
