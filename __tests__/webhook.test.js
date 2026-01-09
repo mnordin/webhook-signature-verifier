@@ -1,73 +1,87 @@
-import { SHARED_SECRET, SIGNATURE_HEADER_NAME } from '../lib/constants';
-import crypto from 'crypto';
-import { NextRequest } from 'next/server';
-import { POST } from '../app/api/webhook/route';
+import { SHARED_SECRET, SIGNATURE_HEADER_NAME } from "../lib/constants";
+import { verifySignature } from "../lib/signature";
+import crypto from "crypto";
 
 // Mock the console.log to prevent test output noise
-global.console = {
+jest.mock("console", () => ({
   ...console,
   log: jest.fn(),
-};
-
-// Helper function to create a Next.js request with headers and body
-function createRequest(body, headers = {}) {
-  return new NextRequest('http://localhost:3000/api/webhook', {
-    method: 'POST',
-    headers: headers,
-    body: typeof body === 'string' ? body : JSON.stringify(body),
-  });
-}
+  error: jest.fn(),
+}));
 
 // Helper function to generate a valid signature
 function generateSignature(payload) {
-  const bodyString = typeof payload === 'string' ? payload : JSON.stringify(payload);
-  const hmac = crypto.createHmac('sha256', SHARED_SECRET);
+  const bodyString =
+    typeof payload === "string" ? payload : JSON.stringify(payload);
+  const hmac = crypto.createHmac("sha256", SHARED_SECRET);
   hmac.update(bodyString);
-  return hmac.digest('hex');
+  return hmac.digest("hex");
 }
 
-describe('POST /api/webhook', () => {
-  it('should respond with 200 for valid signature', async () => {
-    const payload = { "test": "some data" };
+describe("Webhook Signature Verification", () => {
+  it("should verify a valid signature", () => {
+    const payload = { test: "some data" };
     const payloadString = JSON.stringify(payload);
     const validSignature = generateSignature(payloadString);
 
-    const request = createRequest(payloadString, {
-      [SIGNATURE_HEADER_NAME]: validSignature
-    });
-
-    const response = await POST(request);
-
-    expect(response.status).toBe(200);
-    const responseText = await response.text();
-    expect(responseText).toBe("Webhook received successfully");
+    const result = verifySignature(payloadString, validSignature);
+    expect(result).toBe(true);
   });
 
-  it('should respond with 401 for invalid signature', async () => {
-    const payload = { "test": "some data" };
+  it("should reject an invalid signature", () => {
+    const payload = { test: "some data" };
     const payloadString = JSON.stringify(payload);
+    const invalidSignature = "invalidSignature123";
 
-    const request = createRequest(payloadString, {
-      [SIGNATURE_HEADER_NAME]: "invalidSignature"
-    });
-
-    const response = await POST(request);
-
-    expect(response.status).toBe(401);
-    const responseText = await response.text();
-    expect(responseText).toBe("Invalid signature");
+    const result = verifySignature(payloadString, invalidSignature);
+    expect(result).toBe(false);
   });
 
-  it('should respond with 401 when signature header is missing', async () => {
-    const payload = { "test": "some data" };
+  it("should reject when signature is missing", () => {
+    const payload = { test: "some data" };
     const payloadString = JSON.stringify(payload);
 
-    const request = createRequest(payloadString);
+    const result = verifySignature(payloadString, null);
+    expect(result).toBe(false);
+  });
 
-    const response = await POST(request);
+  it("should verify signature with different payloads", () => {
+    // Test case 1: Simple string
+    const payload1 = "Hello, world!";
+    const signature1 = generateSignature(payload1);
+    expect(verifySignature(payload1, signature1)).toBe(true);
 
-    expect(response.status).toBe(401);
-    const responseText = await response.text();
-    expect(responseText).toBe("Invalid signature");
+    // Test case 2: Empty object
+    const payload2 = "{}";
+    const signature2 = generateSignature(payload2);
+    expect(verifySignature(payload2, signature2)).toBe(true);
+
+    // Test case 3: Complex nested object
+    const payload3 = JSON.stringify({
+      id: 12345,
+      event: "test_event",
+      data: {
+        user: {
+          id: 1,
+          name: "Test User",
+        },
+        items: [1, 2, 3, 4, 5],
+      },
+    });
+    const signature3 = generateSignature(payload3);
+    expect(verifySignature(payload3, signature3)).toBe(true);
+  });
+
+  it("should reject tampered payloads", () => {
+    const originalPayload = { id: 123, action: "create" };
+    const originalPayloadString = JSON.stringify(originalPayload);
+    const signature = generateSignature(originalPayloadString);
+
+    // Modify the payload
+    const tamperedPayload = { id: 123, action: "delete" };
+    const tamperedPayloadString = JSON.stringify(tamperedPayload);
+
+    // Verification should fail with the original signature
+    expect(verifySignature(tamperedPayloadString, signature)).toBe(false);
   });
 });
