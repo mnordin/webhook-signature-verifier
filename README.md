@@ -88,7 +88,3 @@ npm test
 # or
 yarn test
 ```
-
-## License
-
-ISC
