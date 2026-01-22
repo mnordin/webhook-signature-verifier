@@ -1,18 +1,18 @@
 import "@testing-library/jest-dom";
 
-// Set up the required global objects for Next.js tests
-if (typeof global.Request === "undefined") {
-  global.Request = globalThis.Request || require("node-fetch").Request;
-  global.Response = globalThis.Response || require("node-fetch").Response;
-  global.Headers = globalThis.Headers || require("node-fetch").Headers;
-}
+// 1. Assign native Node 25 Fetch API globals
+// We use globalThis to ensure we pull from the Node environment
+// and assign to the Jest global context.
+global.Request = globalThis.Request;
+global.Response = globalThis.Response;
+global.Headers = globalThis.Headers;
 
-// Mock the NextResponse constructor and methods
+// 2. Mock the NextResponse constructor and methods
 global.NextResponse = class NextResponse {
   constructor(body, options = {}) {
     this.body = body;
     this.status = options.status || 200;
-    this._bodyText = body;
+    this._bodyText = typeof body === "string" ? body : JSON.stringify(body);
     this._headers = new Headers(options.headers || {});
   }
 
@@ -25,7 +25,7 @@ global.NextResponse = class NextResponse {
   }
 };
 
-// Mock the global fetch
+// 3. Mock the global fetch
 global.fetch = jest.fn(() =>
   Promise.resolve({
     ok: true,
@@ -35,8 +35,11 @@ global.fetch = jest.fn(() =>
   }),
 );
 
-// Mock clipboard API
-if (typeof navigator.clipboard === "undefined") {
+// 4. Mock clipboard API
+if (
+  typeof navigator !== "undefined" &&
+  typeof navigator.clipboard === "undefined"
+) {
   Object.defineProperty(navigator, "clipboard", {
     value: {
       writeText: jest.fn(),
@@ -45,25 +48,26 @@ if (typeof navigator.clipboard === "undefined") {
   });
 }
 
-// Mock the window object
-Object.defineProperty(window, "matchMedia", {
-  writable: true,
-  value: jest.fn().mockImplementation((query) => ({
-    matches: false,
-    media: query,
-    onchange: null,
-    addListener: jest.fn(),
-    removeListener: jest.fn(),
-    addEventListener: jest.fn(),
-    removeEventListener: jest.fn(),
-    dispatchEvent: jest.fn(),
-  })),
-});
+// 5. Mock the window object
+if (typeof window !== "undefined") {
+  Object.defineProperty(window, "matchMedia", {
+    writable: true,
+    value: jest.fn().mockImplementation((query) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: jest.fn(),
+      removeListener: jest.fn(),
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+      dispatchEvent: jest.fn(),
+    })),
+  });
+}
 
-// Suppress certain console methods during tests
+// 6. Suppress certain console methods during tests
 const originalConsoleError = console.error;
 console.error = jest.fn((...args) => {
-  // Filter out Next.js specific warnings that we don't care about in tests
   if (
     typeof args[0] === "string" &&
     (args[0].includes("next-dev.js") ||
