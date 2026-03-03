@@ -76,12 +76,12 @@ export default function Home() {
         body: webhook.payload,
       });
 
-      const responseText = await response.text();
+      const responseData = await response.json();
 
       setWebhook((prev) => ({
         ...prev,
         responseStatus: response.status,
-        responseBody: responseText,
+        responseBody: JSON.stringify(responseData, null, 2),
         loading: false,
       }));
     } catch (error) {
