@@ -3,25 +3,16 @@ import { generateSignature } from '../../../lib/signature';
 
 export async function POST(request) {
   try {
-    // Get the request body
+    // Get the raw request body as text - this is what will be signed
     const rawBody = await request.text();
-    let payload;
 
-    try {
-      // Try to parse as JSON if possible
-      payload = JSON.parse(rawBody);
-    } catch (error) {
-      // If not valid JSON, use the raw text
-      payload = rawBody;
-    }
-
-    // Generate signature
-    const signature = generateSignature(payload);
+    // Generate signature based on the raw body
+    const signature = generateSignature(rawBody);
 
     // Return the signature
     return NextResponse.json({
       signature,
-      payload: typeof payload === 'string' ? payload : JSON.stringify(payload)
+      payload: rawBody
     });
   } catch (error) {
     console.error('Error computing signature:', error);
