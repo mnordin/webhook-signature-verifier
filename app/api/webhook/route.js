@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { verifySignature, logWebhookDetails } from "../../../lib/signature";
+import { verifySignature, logWebhookDetails, generateSignature } from "../../../lib/signature";
 import { SIGNATURE_HEADER_NAME } from "../../../lib/constants";
 
 export async function POST(request) {
@@ -28,21 +28,30 @@ export async function POST(request) {
     headers: Object.fromEntries(request.headers.entries()),
   });
 
-  // Return appropriate response based on signature validation
+  // Generate the expected signature for comparison
+  const expectedSignature = generateSignature(rawBody);
+
+  // Return detailed JSON response based on signature validation
   if (!isValid) {
-    return new NextResponse("Invalid signature", {
-      status: 401,
-      headers: {
-        "Content-Type": "text/plain",
+    return NextResponse.json(
+      {
+        isValid: false,
+        signature: signature || null,
+        expectedSignature,
+        message: signature ? "Invalid signature" : "Missing signature header",
       },
-    });
+      { status: 401 }
+    );
   }
 
-  // Return success response
-  return new NextResponse("Webhook received successfully", {
-    status: 200,
-    headers: {
-      "Content-Type": "text/plain",
+  // Return success response with details
+  return NextResponse.json(
+    {
+      isValid: true,
+      signature,
+      expectedSignature,
+      message: "Webhook received successfully",
     },
-  });
+    { status: 200 }
+  );
 }
