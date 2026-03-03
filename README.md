@@ -14,7 +14,7 @@ A simple Next.js application for debugging webhook signatures. This tool verifie
 ### Prerequisites
 
 - Node.js (version 16 or later recommended)
-- npm or yarn
+- npm
 
 ### Installation
 
@@ -27,15 +27,11 @@ A simple Next.js application for debugging webhook signatures. This tool verifie
 2. Install dependencies
    ```bash
    npm install
-   # or
-   yarn
    ```
 
 3. Start the development server
    ```bash
    npm run dev
-   # or
-   yarn dev
    ```
 
 4. Open [http://localhost:3000](http://localhost:3000) in your browser
@@ -85,6 +81,4 @@ You can modify the configuration in `lib/constants.js`:
 
 ```bash
 npm test
-# or
-yarn test
 ```
