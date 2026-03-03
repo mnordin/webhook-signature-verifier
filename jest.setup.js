@@ -1,5 +1,3 @@
-import "@testing-library/jest-dom";
-
 // 1. Assign native Node 25 Fetch API globals
 // We use globalThis to ensure we pull from the Node environment
 // and assign to the Jest global context.

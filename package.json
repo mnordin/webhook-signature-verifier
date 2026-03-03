@@ -15,7 +15,7 @@
     "hmac",
     "verification"
   ],
-  "author": "",
+  "author": "Markus Nordin",
   "license": "ISC",
   "dependencies": {
     "next": "^16.1.6",
@@ -23,7 +23,6 @@
     "react-dom": "^19.2.4"
   },
   "devDependencies": {
-    "@testing-library/jest-dom": "^6.1.5",
     "@testing-library/react": "^16.3.2",
     "eslint": "^8.56.0",
     "eslint-config-next": "^14.0.4",
