@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { verifySignature, logWebhookDetails, generateSignature } from "../../../lib/signature";
+import { verifySignature, generateSignature } from "../../../lib/signature";
+import { logWebhookDetails } from "../../../lib/logger";
 import { SIGNATURE_HEADER_NAME } from "../../../lib/constants";
 
 export async function POST(request) {
