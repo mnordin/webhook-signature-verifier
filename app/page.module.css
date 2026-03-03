@@ -147,14 +147,21 @@
 }
 
 .responseBody {
-  background-color: #f7f7f7;
+  background-color: #1e1e1e;
   padding: 1rem;
   border-radius: 4px;
   overflow-x: auto;
+  font-family: "Courier New", monospace;
+  border: 1px solid #333;
+  max-height: 400px;
+  overflow-y: auto;
 }
 
 .responseBody pre {
   margin: 0;
+  color: #d4d4d4;
+  line-height: 1.5;
+  font-size: 0.9rem;
   white-space: pre-wrap;
   word-wrap: break-word;
 }
